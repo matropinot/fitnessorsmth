@@ -142,3 +142,9 @@ A full production release would still benefit from:
 - localization (including RTL)
 - privacy policy and store metadata
 - final UX review on physical devices
+
+## AGP 9 / Built-in Kotlin
+
+This project uses Android Gradle Plugin 9+, so Kotlin support is provided by AGP itself. The module intentionally does **not** apply `org.jetbrains.kotlin.android`; only the Compose compiler plugin is applied for Jetpack Compose. The deprecated `android.kotlinOptions {}` DSL is also not used.
+
+GitHub Actions installs Gradle 9.6.0 and runs the validation/build tasks on a GitHub-hosted runner, so the local development machine does not need to perform the full build.

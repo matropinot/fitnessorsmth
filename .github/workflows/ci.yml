@@ -37,6 +37,11 @@ jobs:
           gradle-version: '9.6.0'
           cache-provider: basic
 
+      # AGP 9+ provides built-in Kotlin support. Do not add
+      # org.jetbrains.kotlin.android to app/build.gradle.kts.
+      - name: Verify Gradle configuration
+        run: gradle --no-daemon help
+
       - name: Compile and unit test
         run: gradle --no-daemon testDebugUnitTest
 
