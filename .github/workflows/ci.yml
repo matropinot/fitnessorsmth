@@ -1,0 +1,67 @@
+name: Android CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.6.0'
+          cache-provider: basic
+
+      - name: Compile and unit test
+        run: gradle --no-daemon testDebugUnitTest
+
+      - name: Android Lint
+        run: gradle --no-daemon lintDebug
+
+      - name: Assemble debug APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: homefit-debug-apk-${{ github.sha }}
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: homefit-reports-${{ github.sha }}
+          path: |
+            app/build/reports/tests/**
+            app/build/reports/lint-results-*.html
+            app/build/test-results/**
+          if-no-files-found: warn
+          retention-days: 7
